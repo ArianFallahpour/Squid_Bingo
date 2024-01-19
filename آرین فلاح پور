@@ -1,0 +1,190 @@
+import java.util.Scanner;
+import java.util.Random;
+
+public class Bingo {
+    public static void main(String[] args) {
+        int[][] computer_card = new int[5][5];
+        int[] computer_list = new int[26];
+        int[][] player_card = new int[5][5];
+        int[] player_list = new int[26];
+        int winner = 0, turn, toss = 0;
+        // turn = 0  for computer and 1 for player
+        // winner = 1  for computer and winner = 2 for player and winner = 3 for draw
+        for (int i = 0; i < 26; i++) {
+            computer_list[i] = player_list[i] = 0;
+        }
+        Random rand = new Random();
+        toss = rand.nextInt(2) + 1;
+        System.out.println("Enter your choice for toss:\n1. Head\n2. Tail");
+        Scanner scanner = new Scanner(System.in);
+        turn = scanner.nextInt();
+        if (toss == turn) {
+            System.out.println("You Win the toss");
+            turn = 1;
+        } else {
+            System.out.println("Computer Win the toss");
+            turn = 0;
+        }
+        rand = new Random();
+        createBingoCard(computer_card, computer_list, rand);
+        rand = new Random();
+        createBingoCard(player_card, player_list, rand);
+        while (true) {
+            System.out.println("Player card:");
+            displayCard(player_card, player_list);
+            drawNumber(turn, computer_list, player_list, scanner);
+            if (turn == 1)
+                turn = 0;
+            else {
+                turn = 1;
+            }
+            winner = checkCards(computer_card, player_card, computer_list);
+            if (winner > 0) {
+                break;
+            }
+        }
+        System.out.println("Computer card:");
+        displayCard(computer_card, computer_list);
+        System.out.println("Player card:");
+        displayCard(player_card, player_list);
+        if (winner == 1)
+            System.out.println("\nComputer Wins!");
+        else if (winner == 2)
+            System.out.println("\nPlayer Wins!");
+        else if (winner == 3)
+            System.out.println("\nMatch Draw");
+    }
+
+    public static void createBingoCard(int[][] card, int[] list, Random rand) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                card[i][j] = rand.nextInt(25) + 1;
+                if (list[card[i][j]] == 1) {
+                    j--;
+                } else {
+                    list[card[i][j]] = 1;
+                }
+            }
+        }
+    }
+
+    public static void displayCard(int[][] card, int[] list) {
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (list[card[i][j]] == 1) {
+                    if (card[i][j] < 10) {
+                        System.out.print("0" + card[i][j] + "\t");
+                    } else {
+                        System.out.print(card[i][j] + "\t");
+                    }
+                } else {
+                    System.out.print("X\t");
+                }
+            }
+            System.out.println();
+        }
+    }
+
+    public static int drawNumber(int turn, int[] clist, int[] plist, Scanner scanner) {
+        int number;
+        if (turn == 1) {
+            while (true) {
+                System.out.print("Enter your number : ");
+                number = scanner.nextInt();
+                if (plist[number] == 1 && number > 0 && number < 26) {
+                    clist[number] = plist[number] = 0;
+                    break;
+                } else {
+                    System.out.println("Number already drawn! Please enter valid number !");
+                }
+            }
+        } else {
+            Random rand = new Random();
+            while (true) {
+                number = rand.nextInt(25) + 1;
+                if (clist[number] == 1) {
+                    clist[number] = plist[number] = 0;
+                    break;
+                }
+            }
+            System.out.println("Computer's Drawn Number : " + number + "\n");
+        }
+        return number;
+    }
+
+    public static int checkCards(int[][] computer_card, int[][] player_card, int[] list) {
+        int ccount, pcount, cscore, pscore, cld, pld, crd, prd, size = 5;
+        ccount = pcount = cscore = pscore = cld = crd = pld = prd = 0;
+        for (int i = 0; i < 5; i++) {
+            ccount = pcount = 0;
+            for (int j = 0; j < 5; j++) {
+                if (list[computer_card[i][j]] == 0) {
+                    ccount++;
+                }
+                if (list[player_card[i][j]] == 0) {
+                    pcount++;
+                }
+                if (i == j) {
+                    if (list[computer_card[i][j]] == 0) {
+                        cld++;
+                    }
+                    if (list[player_card[i][j]] == 0) {
+                        pld++;
+                    }
+                }
+                if (i == size - j - 1) {
+                    if (list[computer_card[i][j]] == 0) {
+                        crd++;
+                    }
+                    if (list[player_card[i][j]] == 0) {
+                        prd++;
+                    }
+                }
+            }
+            if (ccount == 5) {
+                cscore++;
+            }
+            if (pcount == 5) {
+                pscore++;
+            }
+        }
+        for (int i = 0; i < 5; i++) {
+            ccount = pcount = 0;
+            for (int j = 0; j < 5; j++) {
+                if (list[computer_card[j][i]] == 0) {
+                    ccount++;
+                }
+                if (list[player_card[j][i]] == 0) {
+                    pcount++;
+                }
+            }
+            if (ccount == 5) {
+                cscore++;
+            }
+            if (pcount == 5) {
+                pscore++;
+            }
+        }
+        if (cld == 5) {
+            cscore++;
+        }
+        if (pld == 5) {
+            pscore++;
+        }
+        if (crd == 5) {
+            cscore++;
+        }
+        if (pld == 5) {
+            pscore++;
+        }
+        if (cscore >= 5 && pscore >= 5) {
+            return 3;
+        } else if (pscore >= 5) {
+            return 2;
+        } else if (cscore >= 5) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
